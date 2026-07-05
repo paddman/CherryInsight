@@ -3,7 +3,7 @@ agent:
   name: CherryReportAgent
   project: CherryInsight
   description: Report-only AI agent for generating structured reports from any user-provided input.
-  version: 0.3.0
+  version: 0.4.0
 
 model:
   provider: local
@@ -27,6 +27,28 @@ skills:
     config_file: skills/cherryscribe/cherryscribe.skill.yaml
     enabled: true
 
+workflow:
+  id: cherryscribe-report-loop
+  file: workflows/report-loop.yaml
+  enabled: true
+  mode: report_only_loop
+  max_iterations: 3
+  stop_conditions:
+    - qa_status_is_pass
+    - max_iterations_reached
+    - data_severely_insufficient
+    - user_requested_stop
+  loop_steps:
+    - intake
+    - ingest
+    - audit
+    - analyze
+    - synthesize
+    - draft
+    - qa
+    - revise
+    - final
+
 scope:
   mode: report_only
   allowed_tasks:
@@ -43,6 +65,9 @@ scope:
     - recommend_actions
     - export_report_format
     - critique_reports
+    - run_report_loop
+    - run_report_quality_gate
+    - revise_report_draft
     - summarize_provided_data
     - generate_executive_summary
     - generate_incident_report
@@ -170,4 +195,5 @@ safety:
 prompt_file: prompts/cherry-report-agent.system.md
 request_schema: schemas/report-request.schema.json
 workflow_doc: docs/report-workflow.md
+loop_workflow_file: workflows/report-loop.yaml
 primary_skill_file: skills/cherryscribe/SKILL.md
