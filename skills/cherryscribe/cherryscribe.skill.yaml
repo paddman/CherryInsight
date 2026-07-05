@@ -25,6 +25,9 @@ scope:
     - recommend_actions
     - export_report_format
     - critique_reports
+    - run_report_loop
+    - run_quality_gate
+    - revise_report_draft
   blocked:
     - general_chat_tasks
     - marketing_email_generation
@@ -47,6 +50,26 @@ commands:
     description: Format the current report for Markdown, HTML, PDF config, or JSON.
   - command: /report critique
     description: Review a provided report and suggest improvements.
+  - command: /report loop
+    description: Run the controlled report loop with QA and revision until pass or max iterations.
+
+loop:
+  enabled: true
+  workflow_file: workflows/report-loop.yaml
+  max_iterations: 3
+  memory_scope: current_report_only
+  stop_when:
+    - qa_status_is_pass
+    - max_iterations_reached
+    - data_severely_insufficient
+    - user_requested_stop
+  revise_when:
+    - insight_without_evidence
+    - invalid_calculation
+    - unsupported_claim_found
+    - missing_required_section
+    - unmasked_pii_found
+    - format_invalid
 
 sop:
   - requirement_clarification
@@ -54,6 +77,7 @@ sop:
   - analysis_and_insight_extraction
   - iron_draft
   - quality_assurance
+  - revise_if_needed
   - final_output_generation
 
 report_template:
@@ -78,5 +102,9 @@ guardrails:
   mask_pii_by_default: true
   missing_data_token: "[Data Missing]"
   reject_unrelated_tasks: true
+  evidence_required_for_each_insight: true
+  calculations_must_be_reproducible_from_input: true
+  no_fake_chart_data: true
+  no_external_claim_without_input: true
 
 skill_file: skills/cherryscribe/SKILL.md
