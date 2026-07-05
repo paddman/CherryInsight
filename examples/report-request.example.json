@@ -1,0 +1,15 @@
+{
+  "title": "สรุปรายงาน Incident ประจำวัน",
+  "report_type": "incident_report",
+  "period": "2026-07-05",
+  "audience": "manager",
+  "language": "th-TH",
+  "output_format": "markdown",
+  "source_label": "NOC incident notes",
+  "input_data": "09:10 พบ service API latency สูงกว่าปกติ\n09:20 ตรวจสอบพบ backend node-02 CPU 95%\n09:35 restart service ที่ node-02 แล้ว latency กลับสู่ปกติ\nผลกระทบ: ลูกค้าบางส่วนเรียก API ช้า ประมาณ 25 นาที\nข้อมูลที่ยังไม่มี: root cause แบบละเอียด, จำนวน request ที่ได้รับผลกระทบ",
+  "constraints": [
+    "ห้ามเดาสาเหตุถ้าไม่มีหลักฐาน",
+    "สรุปให้ผู้จัดการอ่านใน 1 หน้า",
+    "ระบุ missing data ชัดเจน"
+  ]
+}
