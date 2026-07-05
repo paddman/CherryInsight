@@ -1,0 +1,62 @@
+{
+  "title": "รายงานรวม Incident + Operation ประจำวันที่ 5 กรกฎาคม 2026",
+  "report_type": "operation_report",
+  "period": "2026-07-05",
+  "audience": "manager",
+  "language": "th-TH",
+  "output_format": "markdown",
+  "input_mode": "mixed",
+  "source_label": "Daily mixed operation data",
+  "report_goal": "สรุปว่าเกิดอะไรขึ้น กระทบอะไร เสี่ยงตรงไหน และควรทำอะไรต่อ",
+  "input_data": {
+    "summary": "รวมข้อมูลจาก note, metric, ticket, chat และ file reference",
+    "business_context": "ระบบ API สำหรับลูกค้าบางส่วนมี latency สูงช่วงเช้า"
+  },
+  "input_sources": [
+    {
+      "name": "NOC Notes",
+      "source_type": "text",
+      "content": "09:10 พบ API latency สูงกว่าปกติ\n09:20 ตรวจสอบพบ backend node-02 CPU 95%\n09:35 restart service ที่ node-02 แล้ว latency กลับสู่ปกติ\nผลกระทบ: ลูกค้าบางส่วนเรียก API ช้า ประมาณ 25 นาที"
+    },
+    {
+      "name": "System Metrics",
+      "source_type": "metric",
+      "content": {
+        "node": "backend-node-02",
+        "cpu_peak": "95%",
+        "impact_duration_minutes": 25,
+        "status_after_restart": "normal"
+      }
+    },
+    {
+      "name": "Incident Ticket",
+      "source_type": "ticket",
+      "content": {
+        "ticket_id": "INC-2026-0705-001",
+        "severity": "medium",
+        "status": "resolved",
+        "customer_impact": "API response slow for some customers",
+        "root_cause": null
+      }
+    },
+    {
+      "name": "Team Chat",
+      "source_type": "chat_text",
+      "content": "ทีม infra แจ้งว่า node-02 มี process ใช้ CPU สูง แต่ยังไม่มี RCA ที่ยืนยันแล้ว"
+    },
+    {
+      "name": "Grafana Screenshot",
+      "source_type": "image_ref",
+      "content": "grafana-latency-20260705.png",
+      "metadata": {
+        "note": "มีแค่ชื่อไฟล์ ยังไม่มีข้อมูลภาพให้ agent อ่าน"
+      }
+    }
+  ],
+  "constraints": [
+    "ห้ามเดา root cause ถ้าไม่มีหลักฐาน",
+    "ให้เขียนสำหรับ manager",
+    "สรุปสั้น กระชับ",
+    "แยก Missing Data ให้ชัด"
+  ]
+}
