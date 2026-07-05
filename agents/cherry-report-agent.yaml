@@ -2,8 +2,8 @@ agent:
   id: cherry-report-agent
   name: CherryReportAgent
   project: CherryInsight
-  description: Report-only AI agent for generating structured reports from provided data.
-  version: 0.1.0
+  description: Report-only AI agent for generating structured reports from any user-provided input.
+  version: 0.2.0
 
 model:
   provider: local
@@ -21,6 +21,8 @@ locale:
 scope:
   mode: report_only
   allowed_tasks:
+    - accept_mixed_input
+    - normalize_input_bundle
     - summarize_provided_data
     - generate_executive_summary
     - generate_incident_report
@@ -28,6 +30,9 @@ scope:
     - generate_system_health_report
     - generate_financial_summary
     - generate_trading_journal_summary
+    - generate_business_report
+    - generate_customer_report
+    - generate_technical_report
     - extract_findings
     - extract_risks
     - extract_action_items
@@ -53,11 +58,43 @@ tools:
   allowed: []
 
 input_policy:
+  mode: accept_all_user_input
   primary_source: user_provided_data
   allow_external_knowledge: false
-  require_source_label: true
+  require_source_label: false
   missing_data_behavior: mark_as_missing
   assumption_behavior: explicit_only
+  accepted_input_modes:
+    - auto
+    - text
+    - json
+    - table
+    - logs
+    - metrics
+    - mixed
+    - file_refs
+  accepted_source_types:
+    - text
+    - json
+    - csv
+    - table
+    - log
+    - metric
+    - ticket
+    - email_text
+    - chat_text
+    - file_ref
+    - image_ref
+    - url_ref
+    - other
+  normalization_steps:
+    - detect_input_type
+    - split_sources
+    - extract_entities_dates_metrics
+    - identify_missing_context
+    - classify_report_type
+    - build_report_outline
+    - generate_report
 
 output_policy:
   default_format: markdown
@@ -82,6 +119,7 @@ output_policy:
     avoid_unsupported_claims: true
 
 quality_rules:
+  - Accept all user-provided input types, but only report on what can be read from the input.
   - Do not invent facts, metrics, dates, names, or causes.
   - Separate confirmed facts from assumptions.
   - If data is insufficient, say what is missing.
@@ -99,3 +137,4 @@ safety:
 
 prompt_file: prompts/cherry-report-agent.system.md
 request_schema: schemas/report-request.schema.json
+workflow_doc: docs/report-workflow.md
