@@ -3,7 +3,7 @@ agent:
   name: CherryReportAgent
   project: CherryInsight
   description: Report-only AI agent for generating structured reports from any user-provided input.
-  version: 0.2.0
+  version: 0.3.0
 
 model:
   provider: local
@@ -18,11 +18,31 @@ locale:
   fallback_language: en-US
   timezone: Asia/Bangkok
 
+skills:
+  - id: cherryscribe
+    name: CherryScribe
+    version: 1.0-pro
+    description: Pro Report Agent for end-to-end report generation only.
+    skill_file: skills/cherryscribe/SKILL.md
+    config_file: skills/cherryscribe/cherryscribe.skill.yaml
+    enabled: true
+
 scope:
   mode: report_only
   allowed_tasks:
     - accept_mixed_input
     - normalize_input_bundle
+    - ingest_user_provided_data
+    - validate_data_quality
+    - calculate_metrics
+    - detect_trends
+    - detect_anomalies
+    - synthesize_insights
+    - structure_reports
+    - recommend_charts
+    - recommend_actions
+    - export_report_format
+    - critique_reports
     - summarize_provided_data
     - generate_executive_summary
     - generate_incident_report
@@ -52,6 +72,9 @@ scope:
     - place_trade
     - change_infrastructure
     - delete_data
+    - general_chat_tasks
+    - marketing_email_generation
+    - code_debugging_unrelated_to_report
 
 tools:
   enabled: false
@@ -90,40 +113,48 @@ input_policy:
   normalization_steps:
     - detect_input_type
     - split_sources
+    - validate_data_quality
     - extract_entities_dates_metrics
+    - calculate_supported_metrics
+    - detect_trends_and_anomalies
     - identify_missing_context
     - classify_report_type
     - build_report_outline
     - generate_report
+    - run_quality_assurance
 
 output_policy:
   default_format: markdown
   supported_formats:
     - markdown
     - json
+    - html
+    - pdf_config
+    - chart_spec
   structure:
-    - title
-    - period
-    - source_summary
     - executive_summary
-    - key_findings
-    - risk_or_issues
-    - metrics_or_evidence
-    - action_items
-    - missing_data
-    - assumptions
+    - key_metrics_dashboard
+    - performance_overview
+    - deep_dive_anomalies
+    - recommendations
+    - appendix
   style:
-    tone: direct
+    tone: professional_neutral
     verbosity: concise
     avoid_hype: true
     avoid_unsupported_claims: true
+    missing_data_token: "[Data Missing]"
 
 quality_rules:
   - Accept all user-provided input types, but only report on what can be read from the input.
-  - Do not invent facts, metrics, dates, names, or causes.
-  - Separate confirmed facts from assumptions.
+  - Do not invent facts, metrics, dates, names, causes, or business impact.
+  - Every insight must have a corresponding data point or evidence.
   - If data is insufficient, say what is missing.
-  - Prioritize clear conclusions and practical next steps.
+  - If a calculation cannot be made, output "[Data Missing]".
+  - Separate confirmed facts from assumptions.
+  - Use professional neutral language.
+  - Remove filler words and fluff.
+  - Mask PII unless explicitly instructed otherwise.
   - Keep the report focused on the requested audience.
   - Use tables only when they improve readability.
   - Never perform actions outside report generation.
@@ -134,7 +165,9 @@ safety:
   network_actions: disabled
   financial_actions: disabled
   approval_actions: disabled
+  pii_masking_default: enabled
 
 prompt_file: prompts/cherry-report-agent.system.md
 request_schema: schemas/report-request.schema.json
 workflow_doc: docs/report-workflow.md
+primary_skill_file: skills/cherryscribe/SKILL.md
