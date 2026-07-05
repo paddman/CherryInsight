@@ -1,0 +1,71 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/paddman/CherryInsight/schemas/report-request.schema.json",
+  "title": "CherryReportAgent Report Request",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "title",
+    "report_type",
+    "audience",
+    "input_data"
+  ],
+  "properties": {
+    "title": {
+      "type": "string",
+      "minLength": 1
+    },
+    "report_type": {
+      "type": "string",
+      "enum": [
+        "executive_summary",
+        "incident_report",
+        "operation_report",
+        "system_health_report",
+        "financial_summary",
+        "trading_journal_summary",
+        "custom_report"
+      ]
+    },
+    "period": {
+      "type": "string",
+      "description": "Report period, for example: 2026-07-01 to 2026-07-05"
+    },
+    "audience": {
+      "type": "string",
+      "description": "Target reader, for example: executive, manager, engineer, customer"
+    },
+    "language": {
+      "type": "string",
+      "default": "th-TH"
+    },
+    "output_format": {
+      "type": "string",
+      "enum": ["markdown", "json"],
+      "default": "markdown"
+    },
+    "source_label": {
+      "type": "string",
+      "description": "Short label for the source data"
+    },
+    "input_data": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Raw notes, logs, metrics, ticket text, CSV-like data, or other user-provided content"
+    },
+    "constraints": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": []
+    },
+    "sections": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Optional section override"
+    }
+  }
+}
