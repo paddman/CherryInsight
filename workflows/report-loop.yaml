@@ -1,0 +1,202 @@
+workflow:
+  id: cherryscribe-report-loop
+  name: CherryScribe Report Loop
+  version: 1.0.0
+  mode: report_only_loop
+  description: Controlled loop workflow for end-to-end report generation, QA, revision, and final export.
+
+runtime:
+  model: qwen3.5-9b
+  max_iterations: 3
+  default_output_format: markdown
+  stateful: true
+  memory_scope: current_report_only
+
+loop:
+  enabled: true
+  pattern: ingest_audit_analyze_draft_qa_revise_final
+  max_iterations: 3
+  stop_when:
+    - qa_status_is_pass
+    - max_iterations_reached
+    - data_severely_insufficient
+    - user_requested_stop
+  continue_when:
+    - missing_required_section
+    - unsupported_claim_found
+    - insight_without_evidence
+    - invalid_calculation
+    - unmasked_pii_found
+    - format_invalid
+
+steps:
+  - id: intake
+    name: Intake Request
+    purpose: Capture audience, timeframe, objective, output format, and input bundle.
+    allowed_actions:
+      - parse_request
+      - detect_command
+      - detect_report_type
+    outputs:
+      - request_context
+      - report_intent
+      - missing_requirements
+
+  - id: ingest
+    name: Ingest Sources
+    purpose: Read all user-provided sources that are available in the payload.
+    allowed_actions:
+      - split_sources
+      - normalize_text
+      - normalize_json
+      - normalize_table
+      - normalize_metrics
+      - normalize_logs
+    outputs:
+      - normalized_sources
+      - source_summary
+
+  - id: audit
+    name: Data Audit
+    purpose: Validate completeness, caveats, conflicts, and unusable data.
+    allowed_actions:
+      - calculate_data_quality_score
+      - detect_missing_values
+      - detect_outliers
+      - detect_conflicts
+      - identify_data_caveats
+    outputs:
+      - data_quality_score
+      - data_caveats
+      - missing_data
+      - conflicts
+
+  - id: analyze
+    name: Analysis
+    purpose: Calculate supported metrics and extract findings.
+    allowed_actions:
+      - calculate_mom
+      - calculate_yoy
+      - calculate_cagr
+      - calculate_variance
+      - detect_threshold_anomaly
+      - detect_zscore_anomaly
+      - extract_key_findings
+    outputs:
+      - statistical_findings
+      - key_findings
+      - anomalies
+
+  - id: synthesize
+    name: Insight Synthesis
+    purpose: Convert findings into evidence-backed business or technical insights.
+    allowed_actions:
+      - rank_insights_by_impact
+      - rank_insights_by_urgency
+      - map_evidence_to_insights
+      - identify_risks
+      - recommend_actions
+      - recommend_charts
+    outputs:
+      - prioritized_insights
+      - risks
+      - recommendations
+      - chart_specs
+
+  - id: draft
+    name: Iron Draft
+    purpose: Generate the first complete report draft using the selected template.
+    allowed_actions:
+      - build_report_outline
+      - generate_report_sections
+      - generate_executive_summary_last
+    outputs:
+      - report_draft
+
+  - id: qa
+    name: Quality Assurance
+    purpose: Validate evidence, calculations, format, tone, and guardrails.
+    allowed_actions:
+      - check_insight_evidence
+      - check_calculation_validity
+      - check_missing_data_labels
+      - check_pii_masking
+      - check_tone
+      - check_format
+      - check_scope
+    outputs:
+      - qa_status
+      - qa_findings
+      - revision_plan
+
+  - id: revise
+    name: Revise Report
+    purpose: Fix QA findings without inventing data.
+    run_if:
+      - qa_status_is_fail
+      - iteration_less_than_max
+    allowed_actions:
+      - remove_unsupported_claims
+      - mark_missing_data
+      - fix_format
+      - mask_pii
+      - tighten_language
+      - rebuild_invalid_tables
+    outputs:
+      - revised_report
+
+  - id: final
+    name: Final Output
+    purpose: Return the final report or the best safe partial report.
+    allowed_actions:
+      - finalize_markdown
+      - finalize_json
+      - finalize_html
+      - finalize_pdf_config
+      - finalize_chart_spec
+    outputs:
+      - final_report
+      - final_qa_status
+      - unresolved_caveats
+
+state:
+  fields:
+    - iteration
+    - request_context
+    - normalized_sources
+    - data_quality_score
+    - data_caveats
+    - missing_data
+    - statistical_findings
+    - key_findings
+    - prioritized_insights
+    - recommendations
+    - chart_specs
+    - report_draft
+    - qa_status
+    - qa_findings
+    - final_report
+
+quality_gates:
+  evidence_required_for_each_insight: true
+  calculations_must_be_reproducible_from_input: true
+  missing_data_must_be_marked: true
+  pii_masking_required_by_default: true
+  no_unrelated_tasks: true
+  no_external_claim_without_input: true
+  no_fake_chart_data: true
+
+failure_policy:
+  if_data_severely_insufficient: return_gap_report
+  if_max_iterations_reached: return_best_safe_report_with_caveats
+  if_unrelated_task: reject_with_scope_message
+  if_export_file_requested_without_runtime_file_writer: return_export_config_only
+
+scope_lock:
+  report_only: true
+  command_execution: disabled
+  write_actions: disabled
+  network_actions: disabled
+  ticket_actions: disabled
+  email_actions: disabled
+  financial_actions: disabled
