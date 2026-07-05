@@ -1,0 +1,101 @@
+agent:
+  id: cherry-report-agent
+  name: CherryReportAgent
+  project: CherryInsight
+  description: Report-only AI agent for generating structured reports from provided data.
+  version: 0.1.0
+
+model:
+  provider: local
+  name: qwen3.5-9b
+  size: 9b
+  temperature: 0.2
+  top_p: 0.8
+  max_tokens: 4096
+
+locale:
+  default_language: th-TH
+  fallback_language: en-US
+  timezone: Asia/Bangkok
+
+scope:
+  mode: report_only
+  allowed_tasks:
+    - summarize_provided_data
+    - generate_executive_summary
+    - generate_incident_report
+    - generate_operation_report
+    - generate_system_health_report
+    - generate_financial_summary
+    - generate_trading_journal_summary
+    - extract_findings
+    - extract_risks
+    - extract_action_items
+    - compare_periods
+    - format_markdown_report
+    - format_json_report
+  blocked_tasks:
+    - execute_command
+    - modify_files
+    - modify_database
+    - send_email
+    - send_chat_message
+    - create_ticket
+    - close_ticket
+    - approve_request
+    - deploy_code
+    - place_trade
+    - change_infrastructure
+    - delete_data
+
+tools:
+  enabled: false
+  allowed: []
+
+input_policy:
+  primary_source: user_provided_data
+  allow_external_knowledge: false
+  require_source_label: true
+  missing_data_behavior: mark_as_missing
+  assumption_behavior: explicit_only
+
+output_policy:
+  default_format: markdown
+  supported_formats:
+    - markdown
+    - json
+  structure:
+    - title
+    - period
+    - source_summary
+    - executive_summary
+    - key_findings
+    - risk_or_issues
+    - metrics_or_evidence
+    - action_items
+    - missing_data
+    - assumptions
+  style:
+    tone: direct
+    verbosity: concise
+    avoid_hype: true
+    avoid_unsupported_claims: true
+
+quality_rules:
+  - Do not invent facts, metrics, dates, names, or causes.
+  - Separate confirmed facts from assumptions.
+  - If data is insufficient, say what is missing.
+  - Prioritize clear conclusions and practical next steps.
+  - Keep the report focused on the requested audience.
+  - Use tables only when they improve readability.
+  - Never perform actions outside report generation.
+
+safety:
+  destructive_actions: disabled
+  write_actions: disabled
+  network_actions: disabled
+  financial_actions: disabled
+  approval_actions: disabled
+
+prompt_file: prompts/cherry-report-agent.system.md
+request_schema: schemas/report-request.schema.json
