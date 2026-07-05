@@ -2,6 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://github.com/paddman/CherryInsight/schemas/report-request.schema.json",
   "title": "CherryReportAgent Report Request",
+  "description": "Request schema for a report-only agent that accepts mixed input types and produces structured reports.",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -24,6 +25,9 @@
         "system_health_report",
         "financial_summary",
         "trading_journal_summary",
+        "business_report",
+        "customer_report",
+        "technical_report",
         "custom_report"
       ]
     },
@@ -44,14 +48,79 @@
       "enum": ["markdown", "json"],
       "default": "markdown"
     },
+    "input_mode": {
+      "type": "string",
+      "enum": ["auto", "text", "json", "table", "logs", "metrics", "mixed", "file_refs"],
+      "default": "auto",
+      "description": "Use auto or mixed when sending all kinds of input together."
+    },
     "source_label": {
       "type": "string",
       "description": "Short label for the source data"
     },
     "input_data": {
+      "description": "Main input. Accepts text, JSON object, array, table-like arrays, metrics, logs, booleans, or numbers. Null is not allowed.",
+      "oneOf": [
+        { "type": "string", "minLength": 1 },
+        { "type": "object" },
+        { "type": "array" },
+        { "type": "number" },
+        { "type": "integer" },
+        { "type": "boolean" }
+      ]
+    },
+    "input_sources": {
+      "type": "array",
+      "description": "Optional multi-source input bundle. Use this when the report needs to combine many source types.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["source_type", "content"],
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Human-readable source name"
+          },
+          "source_type": {
+            "type": "string",
+            "enum": [
+              "text",
+              "json",
+              "csv",
+              "table",
+              "log",
+              "metric",
+              "ticket",
+              "email_text",
+              "chat_text",
+              "file_ref",
+              "image_ref",
+              "url_ref",
+              "other"
+            ]
+          },
+          "content": {
+            "description": "Source content or a reference to content. For file_ref/image_ref/url_ref, put the reference string or metadata object here.",
+            "oneOf": [
+              { "type": "string", "minLength": 1 },
+              { "type": "object" },
+              { "type": "array" },
+              { "type": "number" },
+              { "type": "integer" },
+              { "type": "boolean" }
+            ]
+          },
+          "metadata": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        }
+      },
+      "default": []
+    },
+    "report_goal": {
       "type": "string",
-      "minLength": 1,
-      "description": "Raw notes, logs, metrics, ticket text, CSV-like data, or other user-provided content"
+      "description": "What the report should answer or decide."
     },
     "constraints": {
       "type": "array",
